@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+src/telegram_bot_price.egg-info/PKG-INFO
+src/telegram_bot_price.egg-info/SOURCES.txt
+src/telegram_bot_price.egg-info/dependency_links.txt
+src/telegram_bot_price.egg-info/requires.txt
+src/telegram_bot_price.egg-info/top_level.txt
