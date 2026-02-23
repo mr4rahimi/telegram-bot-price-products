@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Offer, OfferPlatform
 from app.services.price.basalam import BasalamFetcher
 
+from app.services.price.snappshop import SnappshopFetcher
+
 
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
@@ -15,6 +17,9 @@ def _utcnow() -> datetime:
 class PriceService:
     def __init__(self) -> None:
         self._basalam = BasalamFetcher()
+        self._snappshop = SnappshopFetcher()
+
+        
 
     async def get_offer_price_toman(
         self,
@@ -22,19 +27,22 @@ class PriceService:
         offer: Offer,
         force_refresh: bool = False,
     ) -> tuple[int | None, str | None]:
-        """
-        خروجی: (price_toman, error_message)
-        - اگر قیمت موجود باشد error_message=None
-        - اگر خطا باشد price ممکن است None یا آخرین قیمت کش شده باشد
-        """
+    
         if offer.platform != OfferPlatform.basalam:
             return offer.price_last, None
+        
+        elif offer.platform == OfferPlatform.snappshop:
+            result = await self._snappshop.fetch_price(offer.url, offer.seller_name or "")
 
      
         if not force_refresh and offer.price_last is not None and offer.price_updated_at is not None:
             age = _utcnow() - offer.price_updated_at.replace(tzinfo=timezone.utc)
             if age < timedelta(seconds=offer.ttl_seconds):
                 return offer.price_last, None
+            
+        else:
+         
+            return offer.price_last, None    
 
       
         result = await self._basalam.fetch_price(offer.url)

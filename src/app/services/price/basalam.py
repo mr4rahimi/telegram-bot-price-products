@@ -22,20 +22,33 @@ class BasalamFetcher:
         }
 
         try:
-            async with httpx.AsyncClient(timeout=self._timeout, headers=headers, follow_redirects=True) as client:
+            async with httpx.AsyncClient(
+                timeout=self._timeout,
+                headers=headers,
+                follow_redirects=True,
+                trust_env=False, 
+            ) as client:
                 r = await client.get(url)
                 r.raise_for_status()
                 text = r.text
         except Exception as e:
             return PriceResult(ok=False, error=f"http_error: {type(e).__name__}: {e}")
 
-        m = re.search(r'"offers"\s*:\s*\{.*?"price"\s*:\s*([0-9]+)', text, flags=re.DOTALL)
-        if m:
-            irr = int(m.group(1))  # IRR
-    
+ 
+        matches = re.findall(r'"priceCurrency"\s*:\s*"IRR"\s*,\s*"price"\s*:\s*([0-9]+)', text)
+        if matches:
+            irr = int(matches[0])
             toman = irr // 10
             if toman > 0:
                 return PriceResult(ok=True, price_toman=toman)
+
+        m2 = re.search(r'"@type"\s*:\s*"Offer"[^{}]{0,2000}?"price"\s*:\s*([0-9]+)', text, flags=re.DOTALL)
+        if m2:
+            irr = int(m2.group(1))
+            toman = irr // 10
+            if toman > 0:
+                return PriceResult(ok=True, price_toman=toman)
+
 
         try:
             tree = html.fromstring(text)
