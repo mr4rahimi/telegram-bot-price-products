@@ -1,7 +1,16 @@
-from app.db.models import OfferPlatform, Product, Offer
+from app.db.models import OfferPlatform, Product
 
 
-def format_product_detail(product: Product, offers: list[Offer]) -> str:
+def format_toman(price: int | None) -> str:
+    if price is None:
+        return "ناموجود"
+    return f"{price:,} تومان"
+
+
+def format_product_detail(
+    product: Product,
+    prices_by_platform: dict[str, str],
+) -> str:
     parts: list[str] = []
     parts.append(f"🛍️ <b>{product.title}</b>")
 
@@ -12,24 +21,21 @@ def format_product_detail(product: Product, offers: list[Offer]) -> str:
     if product.features_json:
         parts.append("")
         parts.append("🔧 <b>ویژگی‌ها</b>")
-        # انتظار: [{"k": "...", "v": "..."}, ...]
-        for item in product.features_json if isinstance(product.features_json, list) else []:
-            k = str(item.get("k", "")).strip()
-            v = str(item.get("v", "")).strip()
-            if k and v:
-                parts.append(f"• {k}: {v}")
+        if isinstance(product.features_json, list):
+            for item in product.features_json:
+                k = str(item.get("k", "")).strip()
+                v = str(item.get("v", "")).strip()
+                if k and v:
+                    parts.append(f"• {k}: {v}")
 
     parts.append("")
-    parts.append("💳 <b>قیمت</b>: — (در فاز بعدی اضافه می‌شود)")
-
-    parts.append("")
-    parts.append("🔗 <b>لینک خرید</b>:")
-    for off in offers:
-        label = {
-            OfferPlatform.basalam: "باسلام",
-            OfferPlatform.snappshop: "اسنپ‌شاپ",
-            OfferPlatform.direct: "خرید مستقیم",
-        }.get(off.platform, off.platform.value)
-        parts.append(f"• {label}")
+    parts.append("💳 <b>قیمت‌ها</b>")
+    # کلیدها: basalam/snappshop/direct
+    if "basalam" in prices_by_platform:
+        parts.append(f"• باسلام: {prices_by_platform['basalam']}")
+    if "snappshop" in prices_by_platform:
+        parts.append(f"• اسنپ‌شاپ: {prices_by_platform['snappshop']}")
+    if "direct" in prices_by_platform:
+        parts.append(f"• خرید مستقیم: {prices_by_platform['direct']}")
 
     return "\n".join(parts)

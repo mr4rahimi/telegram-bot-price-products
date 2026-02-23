@@ -9,8 +9,13 @@ from app.repositories.categories import list_active_categories
 from app.repositories.products import list_active_products_by_category, get_active_product
 from app.repositories.offers import list_active_offers_for_product
 
+from app.services.price.service import PriceService
+from app.bot.ui.messages import format_toman
+
 router = Router()
 
+
+price_service = PriceService()
 
 @router.callback_query(F.data.startswith("cat:"))
 async def on_category_selected(cb: CallbackQuery) -> None:
@@ -29,6 +34,7 @@ async def on_category_selected(cb: CallbackQuery) -> None:
     await cb.answer()
 
 
+
 @router.callback_query(F.data.startswith("prod:"))
 async def on_product_selected(cb: CallbackQuery) -> None:
     product_id = int(cb.data.split(":")[1])
@@ -38,25 +44,41 @@ async def on_product_selected(cb: CallbackQuery) -> None:
         if not product:
             await cb.answer("محصول یافت نشد.", show_alert=True)
             return
+
         offers = await list_active_offers_for_product(session, product_id)
 
-    text = format_product_detail(product, offers)
+        prices_by_platform: dict[str, str] = {}
+        offer_links: list[tuple[str, str]] = []
 
-    # دکمه لینک‌ها
-    offer_links: list[tuple[str, str]] = []
-    for off in offers:
-        label = {
-            OfferPlatform.basalam: "🔗 باسلام",
-            OfferPlatform.snappshop: "🔗 اسنپ‌شاپ",
-            OfferPlatform.direct: "🔗 خرید مستقیم",
-        }.get(off.platform, f"🔗 {off.platform.value}")
-        offer_links.append((label, off.url))
+        # Basalam: fetch with TTL + cache
+        for off in offers:
+            if off.platform == OfferPlatform.basalam:
+                price, err = await price_service.get_offer_price_toman(session, off)
+                if err and price is not None:
+                    prices_by_platform["basalam"] = f"{format_toman(price)} (آخرین ذخیره، خطا در بروزرسانی)"
+                elif err and price is None:
+                    prices_by_platform["basalam"] = "ناموجود (خطا در دریافت)"
+                else:
+                    prices_by_platform["basalam"] = format_toman(price)
 
-    # برای برگشت به محصولات باید category_id را داشته باشیم
+        
+            if off.platform == OfferPlatform.snappshop:
+                prices_by_platform.setdefault("snappshop", "—")
+            if off.platform == OfferPlatform.direct:
+                prices_by_platform.setdefault("direct", "—")
+
+            label = {
+                OfferPlatform.basalam: "🔗 باسلام",
+                OfferPlatform.snappshop: "🔗 اسنپ‌شاپ",
+                OfferPlatform.direct: "🔗 خرید مستقیم",
+            }.get(off.platform, f"🔗 {off.platform.value}")
+            offer_links.append((label, off.url))
+
+    text = format_product_detail(product, prices_by_platform)
+
     category_id = product.category_id
     kb = product_detail_kb(offer_links=offer_links, category_id=category_id)
 
-    # اگر قبلاً پیام بوده، ادیت کنیم
     await cb.message.edit_text(text, reply_markup=kb, disable_web_page_preview=True)
     await cb.answer()
 
