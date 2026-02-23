@@ -19,7 +19,6 @@ class PriceService:
         self._basalam = BasalamFetcher()
         self._snappshop = SnappshopFetcher()
 
-        
 
     async def get_offer_price_toman(
         self,

@@ -77,3 +77,4 @@ class Offer(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     product: Mapped["Product"] = relationship(back_populates="offers")
+    #snappshop: Mapped["SnappshopOffer"] = relationship(back_populates="offer", uselist=False)
