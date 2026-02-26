@@ -7,20 +7,20 @@ from app.db.models import Category, Product, Offer, OfferPlatform
 
 async def seed():
     async with AsyncSessionLocal() as session:
-        # اگر قبلاً دسته داریم، دوباره نریز
+     
         existing = await session.execute(select(Category).limit(1))
         if existing.scalar_one_or_none():
             print("Seed skipped: data already exists.")
             return
 
-        cat = Category(title="شیر ظرفشویی", description="دسته نمونه برای تست", sort_order=0)
+        cat = Category(title="شیر ظرفشویی", description="دسته نمونه برای تست دو", sort_order=0)
         session.add(cat)
-        await session.flush()  # برای گرفتن cat.id
+        await session.flush()  
 
         prod = Product(
             category_id=cat.id,
-            title="شیر ظرفشویی مدل تست",
-            description="توضیحات نمونه",
+            title="شیر ظرفشویی مدل فنری",
+            description="توضیحات فنری نمونه",
             features_json=[{"k": "جنس", "v": "برنج"}, {"k": "رنگ", "v": "کروم"}],
         )
         session.add(prod)
