@@ -18,7 +18,17 @@ async def main() -> None:
     )
     dp = setup_dispatcher()
 
-    await dp.start_polling(bot)
+    await dp.start_polling(
+        bot,
+        polling_timeout=60,
+        request_timeout=30,
+        backoff_config={
+            "min_delay": 1.0,
+            "max_delay": 20.0,
+            "factor": 1.5,
+            "jitter": 0.1,
+        },
+    )
 
 
 if __name__ == "__main__":
