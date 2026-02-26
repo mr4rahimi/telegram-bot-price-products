@@ -63,7 +63,13 @@ async def on_product_selected(cb: CallbackQuery) -> None:
 
         
             if off.platform == OfferPlatform.snappshop:
-                prices_by_platform.setdefault("snappshop", "—")
+              price, err = await price_service.get_offer_price_toman(session, off)
+            if err and price is not None:
+              prices_by_platform["snappshop"] = f"{format_toman(price)} (آخرین ذخیره، خطا در بروزرسانی)"
+            elif err and price is None:
+              prices_by_platform["snappshop"] = "ناموجود (خطا در دریافت)"
+            else:
+              prices_by_platform["snappshop"] = format_toman(price)
             if off.platform == OfferPlatform.direct:
                 prices_by_platform.setdefault("direct", "—")
 
