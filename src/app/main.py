@@ -1,6 +1,5 @@
 import asyncio
 
-from aiohttp import ClientTimeout
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
@@ -12,10 +11,12 @@ from app.bot.dispatcher import setup_dispatcher
 
 
 async def main() -> None:
-    proxy_url = "http://127.0.0.1:10808/" 
+    proxy_url = "http://127.0.0.1:10808/"
+
+    
     session = AiohttpSession(
         proxy=proxy_url,
-        timeout=ClientTimeout(total=60),
+        timeout=60,   # ✅ عدد
     )
 
     bot = Bot(
