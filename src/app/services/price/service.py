@@ -10,6 +10,7 @@ from app.services.price.basalam import BasalamFetcher
 from app.services.price.snappshop import SnappshopFetcher
 
 
+
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
