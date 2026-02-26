@@ -14,7 +14,6 @@ async def main():
     print("HTML length:", len(text))
     print("Seller present in HTML:", seller in text)
 
-    # چند تا عدد شبیه قیمت در HTML هست؟
     prices = re.findall(r"\d{1,3}(?:,\d{3})+", text)
     print("Sample price-like strings:", prices[:10])
 
