@@ -19,7 +19,7 @@ async def seed():
 
         prod = Product(
             category_id=cat.id,
-            title="شیر ظرفشویی مدل فنری",
+            title="شیر ظرفشویی مدل فنری طلایی",
             description="توضیحات فنری نمونه",
             features_json=[{"k": "جنس", "v": "برنج"}, {"k": "رنگ", "v": "کروم"}],
         )
