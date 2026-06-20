@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.admin_api.security import require_admin
 from app.admin_api.schemas import CategoryCreate, CategoryOut, CategoryUpdate
 from app.core.db import get_db
-from app.core.models import Category
+from app.db.models import Category
 
 router = APIRouter(prefix="/api/categories", tags=["categories"])
 
@@ -28,7 +28,11 @@ def create_category(
     _admin: str = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    obj = Category(title=payload.title)
+    obj = Category(
+    title=payload.title,
+    sort_order=0,
+    is_active=True,
+)
     db.add(obj)
     db.commit()
     db.refresh(obj)

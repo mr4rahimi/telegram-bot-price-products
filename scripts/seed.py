@@ -36,7 +36,7 @@ async def seed():
                 product_id=prod.id,
                 platform=OfferPlatform.snappshop,
                 url="https://snappshop.ir/product/snp-900635467",
-                seller_name="نام فروشنده شما",
+                vendor_id="نام فروشنده شما",
             ),
             Offer(
                 product_id=prod.id,

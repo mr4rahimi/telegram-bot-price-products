@@ -1,0 +1,42 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.badge {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.addBtn {
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  transition: opacity 0.15s;
+}
+
+.addBtn:hover {
+  opacity: 0.88;
+}

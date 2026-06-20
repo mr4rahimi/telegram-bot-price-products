@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node
+node_modules/
+admin-panel/dist/
+
+# Uploads (user content)
+uploads/
+
+# Logs
+*.log
+/tmp/
+
+# OS
+.DS_Store
+Thumbs.db

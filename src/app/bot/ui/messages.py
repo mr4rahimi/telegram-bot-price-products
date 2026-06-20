@@ -9,7 +9,7 @@ def format_toman(price: int | None) -> str:
 
 def format_product_detail(product, prices_by_platform):
     parts = []
-    parts.append(f"🛍️ <b>{product.title}</b>")
+    parts.append(f"🛍️ {product.title}")
 
     if product.description:
         parts.append("")
@@ -18,24 +18,21 @@ def format_product_detail(product, prices_by_platform):
     parts.append("")
     parts.append("💰 قیمت‌ها:")
 
-   
-    if "mymonta" in prices_by_platform:
-        parts.append(f"▫️ سایت ما: {prices_by_platform['mymonta']}")
+    platform_info = [
+        ("mymonta",   "سایت ما"),
+        ("basalam",   "باسلام"),
+        ("snappshop", "اسنپ‌شاپ"),
+        ("tapsishop", "تپسی‌شاپ"),
+        ("direct",    "خرید مستقیم"),
+    ]
 
-    if "basalam" in prices_by_platform:
-        parts.append(f"▫️ باسلام: {prices_by_platform['basalam']}")
+    has_price = False
+    for key, label in platform_info:
+        if key in prices_by_platform:
+            has_price = True
+            parts.append(f"▫️ {label}: {prices_by_platform[key]}")
 
-    if "snappshop" in prices_by_platform:
-        parts.append(f"▫️ اسنپ‌شاپ: {prices_by_platform['snappshop']}")
-
-    if "tapsishop" in prices_by_platform:
-        parts.append(f"▫️ تپسی‌شاپ: {prices_by_platform['tapsishop']}")
-
-    if "direct" in prices_by_platform:
-        parts.append(f"▫️ خرید مستقیم: {prices_by_platform['direct']}")
-
- 
-    if len(prices_by_platform) == 0:
+    if not has_price:
         parts.append("ناموجود")
 
     return "\n".join(parts)

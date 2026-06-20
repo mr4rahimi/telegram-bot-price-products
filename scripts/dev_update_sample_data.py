@@ -33,7 +33,7 @@ async def main():
         )).scalar_one_or_none()
         if snapp:
             snapp.url = "https://snappshop.ir/product/snp-195803973"
-            snapp.seller_name = "ابزار الکتریکی پیمان"  # فعلاً برای تست
+            snapp.vendor_id = "ابزار الکتریکی پیمان"  # فعلاً برای تست
             snapp.price_last = None
             snapp.price_updated_at = None
             snapp.last_error = None

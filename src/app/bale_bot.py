@@ -32,7 +32,6 @@ def send_message(chat_id, text, reply_markup=None):
     data = {
         "chat_id": chat_id,
         "text": text,
-        "parse_mode": "HTML",
     }
     if reply_markup:
         data["reply_markup"] = reply_markup
@@ -84,7 +83,7 @@ def product_kb(product):
 
 
 
-UPLOAD_DIR = str(Path(__file__).resolve().parents[3] / "uploads")
+UPLOAD_DIR = str(Path(__file__).resolve().parents[2] / "uploads")
 
 
 def send_photo(chat_id, image_path, caption=None, reply_markup=None):
@@ -100,7 +99,7 @@ def send_photo(chat_id, image_path, caption=None, reply_markup=None):
         return
 
     with open(full_path, "rb") as f:
-        data = {"chat_id": str(chat_id), "parse_mode": "HTML"}
+        data = {"chat_id": str(chat_id)}
         if caption:
             data["caption"] = caption
         if reply_markup:

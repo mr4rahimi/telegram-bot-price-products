@@ -5,10 +5,10 @@ class SnappshopApiFetcher:
     def __init__(self, timeout_seconds: float = 10.0) -> None:
         self._timeout = timeout_seconds
 
-    async def fetch_price(self, api_url: str, seller_name: str, headers: dict[str, str] | None = None) -> PriceResult:
-        seller_name = (seller_name or "").strip()
-        if not seller_name:
-            return PriceResult(ok=False, error="seller_name_required")
+    async def fetch_price(self, api_url: str, vendor_id: str, headers: dict[str, str] | None = None) -> PriceResult:
+        vendor_id = (vendor_id or "").strip()
+        if not vendor_id:
+            return PriceResult(ok=False, error="vendor_id_required")
 
         try:
             async with httpx.AsyncClient(

@@ -1,0 +1,101 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 24px;
+}
+
+.card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.logoMark {
+  font-size: 32px;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  border-color: var(--border-focus);
+}
+
+.error {
+  font-size: 12px;
+  color: var(--danger);
+  background: var(--danger-dim);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--danger);
+}
+
+.btn {
+  background: var(--accent);
+  color: #000;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: var(--radius);
+  transition: opacity 0.15s;
+  margin-top: 4px;
+}
+
+.btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

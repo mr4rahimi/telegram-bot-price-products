@@ -1,0 +1,102 @@
+.shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logoMark {
+  font-size: 20px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.logoText {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  flex: 1;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  border-right: 2px solid transparent;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.navItem:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.navItem.active {
+  color: var(--accent);
+  border-right-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.navIcon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebarFooter {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.username {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.logoutBtn {
+  color: var(--text-dim);
+  font-size: 16px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+.logoutBtn:hover {
+  color: var(--danger);
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+}

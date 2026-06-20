@@ -8,6 +8,10 @@ from app.repositories.categories import list_active_categories
 
 router = Router()
 
+@router.message()
+async def debug_all(message: Message):
+    print("📩 GOT MESSAGE:", message.text)
+
 
 @router.message(CommandStart())
 async def start(message: Message) -> None:

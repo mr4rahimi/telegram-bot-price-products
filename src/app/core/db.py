@@ -5,7 +5,7 @@ from app.core.config import settings
 
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    settings.DATABASE_URL,  # ✅ sync driver
     pool_pre_ping=True,
 )
 
@@ -21,7 +21,6 @@ def get_db() -> Session:
 
 
 def ping_db() -> bool:
-    # simple connectivity check
     with engine.connect() as conn:
         conn.execute(text("SELECT 1"))
     return True
