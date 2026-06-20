@@ -22,6 +22,8 @@ class OfferPlatform(str, enum.Enum):
     basalam = "basalam"
     snappshop = "snappshop"
     direct = "direct"
+    tapsishop = "tapsishop"
+    mymonta = "mymonta"
 
 
 class Category(Base):
@@ -31,8 +33,18 @@ class Category(Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     image_file_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    sort_order: Mapped[int] = mapped_column(Integer, default=0)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    sort_order: Mapped[int] = mapped_column(
+    Integer,
+    default=0,
+    server_default="0",
+    nullable=False
+)
+    is_active: Mapped[bool] = mapped_column(
+    Boolean,
+    default=True,
+    server_default="true",
+    nullable=False
+)
 
     products: Mapped[list["Product"]] = relationship(back_populates="category")
 
@@ -43,10 +55,16 @@ class Product(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
 
-    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+
+    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    basalam_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    snappshop_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    website_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    tapsishop_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    mymonta_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    image_file_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    features_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -55,7 +73,6 @@ class Product(Base):
 
     category: Mapped["Category"] = relationship(back_populates="products")
     offers: Mapped[list["Offer"]] = relationship(back_populates="product")
-
 
 class Offer(Base):
     __tablename__ = "offers"
@@ -66,12 +83,13 @@ class Offer(Base):
     platform: Mapped[OfferPlatform] = mapped_column(Enum(OfferPlatform), nullable=False)
     url: Mapped[str] = mapped_column(Text, nullable=False)
 
-    seller_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    vendor_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
-    price_last: Mapped[int | None] = mapped_column(Integer, nullable=True)  # تومان
+
+    price_last: Mapped[int | None] = mapped_column(Integer, nullable=True) 
     price_updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    ttl_seconds: Mapped[int] = mapped_column(Integer, default=900)
+    ttl_seconds: Mapped[int] = mapped_column(Integer, default=28800)
 
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)

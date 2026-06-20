@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from app.admin_api.security import require_admin
 from app.admin_api.schemas import ProductCreate, ProductOut, ProductUpdate
 from app.core.db import get_db
-from app.core.models import Product, Category
+from app.db.models import Product, Category
+from app.db.models import Offer, OfferPlatform
 
 router = APIRouter(prefix="/api/products", tags=["products"])
 
@@ -21,9 +22,7 @@ def list_products(
     stmt = select(Product).order_by(Product.id.desc())
     if category_id is not None:
         stmt = stmt.where(Product.category_id == category_id)
-
-    items = db.execute(stmt).scalars().all()
-    return items
+    return db.execute(stmt).scalars().all()
 
 
 @router.get("/{product_id}", response_model=ProductOut)
@@ -44,18 +43,34 @@ def create_product(
     _admin: str = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    cat = db.get(Category, payload.category_id)
-    if not cat:
+    if not db.get(Category, payload.category_id):
         raise HTTPException(status_code=400, detail="Invalid category_id")
 
     obj = Product(
         category_id=payload.category_id,
         title=payload.title,
-        image_ref=payload.image_ref,
+        image_url=payload.image_url,
+        basalam_url=payload.basalam_url,
+        snappshop_url=payload.snappshop_url,
+        website_url=payload.website_url,
+        tapsishop_url=payload.tapsishop_url,
+        mymonta_url=payload.mymonta_url,
         description=payload.description,
-        features_json=payload.features_json,
     )
     db.add(obj)
+    db.flush()
+
+    if payload.basalam_url:
+        db.add(Offer(product_id=obj.id, platform=OfferPlatform.basalam, url=payload.basalam_url))
+    if payload.snappshop_url:
+        db.add(Offer(product_id=obj.id, platform=OfferPlatform.snappshop, url=payload.snappshop_url))
+    if payload.website_url:
+        db.add(Offer(product_id=obj.id, platform=OfferPlatform.direct, url=payload.website_url))
+    if payload.tapsishop_url:
+        db.add(Offer(product_id=obj.id, platform=OfferPlatform.tapsishop, url=payload.tapsishop_url))
+    if payload.mymonta_url:
+        db.add(Offer(product_id=obj.id, platform=OfferPlatform.mymonta, url=payload.mymonta_url))
+
     db.commit()
     db.refresh(obj)
     return obj
@@ -73,21 +88,34 @@ def update_product(
         raise HTTPException(status_code=404, detail="Product not found")
 
     if payload.category_id is not None:
-        cat = db.get(Category, payload.category_id)
-        if not cat:
+        if not db.get(Category, payload.category_id):
             raise HTTPException(status_code=400, detail="Invalid category_id")
         obj.category_id = payload.category_id
 
-    if payload.title is not None:
-        obj.title = payload.title
+    for field in ("title", "image_url", "basalam_url", "snappshop_url", "website_url",
+                  "tapsishop_url", "mymonta_url", "description"):
+        val = getattr(payload, field)
+        if val is not None:
+            setattr(obj, field, val)
 
-    # این‌ها اگر None هم باشند یعنی پاک کن
-    if payload.image_ref is not None:
-        obj.image_ref = payload.image_ref
-    if payload.description is not None:
-        obj.description = payload.description
-    if payload.features_json is not None:
-        obj.features_json = payload.features_json
+    offers = db.execute(select(Offer).where(Offer.product_id == obj.id)).scalars().all()
+
+    def sync(platform: OfferPlatform, url: str | None):
+        existing = next((o for o in offers if o.platform == platform), None)
+        if url:
+            if existing:
+                existing.url = url
+            else:
+                db.add(Offer(product_id=obj.id, platform=platform, url=url))
+        else:
+            if existing:
+                db.delete(existing)
+
+    sync(OfferPlatform.basalam, payload.basalam_url)
+    sync(OfferPlatform.snappshop, payload.snappshop_url)
+    sync(OfferPlatform.direct, payload.website_url)
+    sync(OfferPlatform.tapsishop, payload.tapsishop_url)
+    sync(OfferPlatform.mymonta, payload.mymonta_url)
 
     db.commit()
     db.refresh(obj)
@@ -104,6 +132,8 @@ def delete_product(
     if not obj:
         raise HTTPException(status_code=404, detail="Product not found")
 
+    # حذف offer ها
+    db.query(Offer).filter(Offer.product_id == product_id).delete()
+
     db.delete(obj)
     db.commit()
-    return None

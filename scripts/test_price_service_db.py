@@ -8,11 +8,18 @@ from app.services.price.service import PriceService
 
 async def main():
     svc = PriceService()
+
     async with AsyncSessionLocal() as session:
-        offers = (await session.execute(select(Offer).where(Offer.platform.in_([OfferPlatform.basalam, OfferPlatform.snappshop])))).scalars().all()
-        for o in offers:
-            price, err = await svc.get_offer_price_toman(session, o, force_refresh=True)
-            print(o.platform.value, o.url, o.seller_name, price, err)
+        offers = (await session.execute(
+            select(Offer).where(Offer.platform.in_([OfferPlatform.basalam, OfferPlatform.snappshop]))
+        )).scalars().all()
+
+    for o in offers:
+        platform_val = o.platform.value
+        url_short = o.url[:60]
+        async with AsyncSessionLocal() as session:
+            price, err = await svc._fetch_and_persist(session, o)
+        print(platform_val, url_short, "→", price, err)
 
 if __name__ == "__main__":
     asyncio.run(main())

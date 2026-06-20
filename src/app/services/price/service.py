@@ -1,66 +1,85 @@
-from __future__ import annotations
-
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Offer, OfferPlatform
+
 from app.services.price.basalam import BasalamFetcher
 from app.services.price.snappshop import SnappshopFetcher
-
-
-def _utcnow_naive() -> datetime:
-    # datetime بدون timezone (UTC)
-    return datetime.utcnow()
+from app.services.price.tapsishop import TapsiShopFetcher
+from app.services.price.mymonta import MymontaFetcher
 
 
 class PriceService:
-    def __init__(self) -> None:
-        self._basalam = BasalamFetcher()
-        self._snappshop = SnappshopFetcher()
 
-    async def get_offer_price_toman(
+    def __init__(self) -> None:
+        self.basalam = BasalamFetcher()
+        self.snappshop = SnappshopFetcher()
+        self.tapsishop = TapsiShopFetcher()
+        self.mymonta = MymontaFetcher()
+
+    async def _fetch_and_persist(
         self,
         session: AsyncSession,
         offer: Offer,
-        force_refresh: bool = False,
     ) -> tuple[int | None, str | None]:
 
-        # TTL check (naive)
-        if (
-            not force_refresh
-            and offer.price_last is not None
-            and offer.price_updated_at is not None
-        ):
-            age = _utcnow_naive() - offer.price_updated_at  
-            if age < timedelta(seconds=offer.ttl_seconds):
-                return offer.price_last, None
+        try:
 
-        # Fetch
-        if offer.platform == OfferPlatform.basalam:
-            result = await self._basalam.fetch_price(offer.url)
+            # -----------------------------
+            # BASALAM
+            # -----------------------------
+            if offer.platform == OfferPlatform.basalam:
 
-        elif offer.platform == OfferPlatform.snappshop:
-            result = await self._snappshop.fetch_price(
-                offer.url,
-                offer.seller_name or "",
-            )
+                result = await self.basalam.fetch_price(
+                    offer.url,
+                )
 
-        else:
-            return offer.price_last, None
+            # -----------------------------
+            # SNAPPSHOP
+            # -----------------------------
+            elif offer.platform == OfferPlatform.snappshop:
+                result = await self.snappshop.fetch_price(
+                    offer.url,
+                    offer.vendor_id,
+                )
 
-        # Persist
-        if result.ok and result.price_toman:
+            # -----------------------------
+            # TAPSI SHOP
+            # -----------------------------
+            elif offer.platform == OfferPlatform.tapsishop:
+                result = await self.tapsishop.fetch_price(offer.url)
+
+            # -----------------------------
+            # MYMONTA
+            # -----------------------------
+            elif offer.platform == OfferPlatform.mymonta:
+                result = await self.mymonta.fetch_price(offer.url)
+
+            else:
+                return None, "unsupported_platform"
+
+            # -----------------------------
+            # ERROR
+            # -----------------------------
+            if not result.ok:
+                return None, f"update_failed: {result.error}"
+
+            # -----------------------------
+            # SAVE TO DB
+            # -----------------------------
             offer.price_last = result.price_toman
-            offer.price_updated_at = _utcnow_naive()  # ✅ naive
-            offer.last_error = None
+            offer.price_updated_at = datetime.utcnow()
+
+            session.add(offer)
+
             await session.commit()
-            return offer.price_last, None
+            await session.refresh(offer)
 
-        offer.last_error = result.error or "unknown_error"
-        await session.commit()
+            return result.price_toman, None
 
-        if offer.price_last is not None:
-            return offer.price_last, f"update_failed: {offer.last_error}"
+        except Exception as e:
 
-        return None, f"update_failed: {offer.last_error}"
+            await session.rollback()
+
+            return None, f"exception: {type(e).__name__}: {e}"

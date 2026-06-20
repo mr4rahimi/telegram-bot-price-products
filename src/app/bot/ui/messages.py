@@ -7,35 +7,35 @@ def format_toman(price: int | None) -> str:
     return f"{price:,} تومان"
 
 
-def format_product_detail(
-    product: Product,
-    prices_by_platform: dict[str, str],
-) -> str:
-    parts: list[str] = []
+def format_product_detail(product, prices_by_platform):
+    parts = []
     parts.append(f"🛍️ <b>{product.title}</b>")
 
     if product.description:
         parts.append("")
         parts.append(product.description)
 
-    if product.features_json:
-        parts.append("")
-        parts.append("🔧 <b>ویژگی‌ها</b>")
-        if isinstance(product.features_json, list):
-            for item in product.features_json:
-                k = str(item.get("k", "")).strip()
-                v = str(item.get("v", "")).strip()
-                if k and v:
-                    parts.append(f"• {k}: {v}")
-
     parts.append("")
-    parts.append("💳 <b>قیمت‌ها</b>")
-    # کلیدها: basalam/snappshop/direct
+    parts.append("💰 قیمت‌ها:")
+
+   
+    if "mymonta" in prices_by_platform:
+        parts.append(f"▫️ سایت ما: {prices_by_platform['mymonta']}")
+
     if "basalam" in prices_by_platform:
-        parts.append(f"• باسلام: {prices_by_platform['basalam']}")
+        parts.append(f"▫️ باسلام: {prices_by_platform['basalam']}")
+
     if "snappshop" in prices_by_platform:
-        parts.append(f"• اسنپ‌شاپ: {prices_by_platform['snappshop']}")
+        parts.append(f"▫️ اسنپ‌شاپ: {prices_by_platform['snappshop']}")
+
+    if "tapsishop" in prices_by_platform:
+        parts.append(f"▫️ تپسی‌شاپ: {prices_by_platform['tapsishop']}")
+
     if "direct" in prices_by_platform:
-        parts.append(f"• خرید مستقیم: {prices_by_platform['direct']}")
+        parts.append(f"▫️ خرید مستقیم: {prices_by_platform['direct']}")
+
+ 
+    if len(prices_by_platform) == 0:
+        parts.append("ناموجود")
 
     return "\n".join(parts)

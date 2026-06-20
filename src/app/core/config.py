@@ -10,7 +10,14 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    # ✅ sync (admin)
     DATABASE_URL: str
+
+    # ✅ async (bot)
+    DATABASE_URL_ASYNC: str
+
+    BOT_TOKEN: str = ""
+    BALE_BOT_TOKEN: str
 
     ADMIN_USERNAME: str
     ADMIN_PASSWORD: str

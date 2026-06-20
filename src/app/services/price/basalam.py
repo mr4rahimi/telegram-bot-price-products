@@ -1,24 +1,18 @@
 import re
-
 import httpx
-from lxml import html
-
 from app.services.price.base import PriceResult
-from app.services.price.normalize import normalize_price_to_toman
 
 
 class BasalamFetcher:
-    def __init__(self, timeout_seconds: float = 10.0) -> None:
+    def __init__(self, timeout_seconds: float = 20.0) -> None:
         self._timeout = timeout_seconds
 
     async def fetch_price(self, url: str) -> PriceResult:
         headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (X11; Linux x86_64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/124.0 Safari/537.36"
-            ),
-            "Accept-Language": "fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Accept": "text/html,application/xhtml+xml",
+            "Accept-Language": "fa-IR,fa;q=0.9",
+            "Connection": "keep-alive",
         }
 
         try:
@@ -26,38 +20,31 @@ class BasalamFetcher:
                 timeout=self._timeout,
                 headers=headers,
                 follow_redirects=True,
-                trust_env=False, 
             ) as client:
                 r = await client.get(url)
-                r.raise_for_status()
+
+                if r.status_code != 200:
+                    return PriceResult(ok=False, error=f"status_{r.status_code}")
+
                 text = r.text
+
         except Exception as e:
             return PriceResult(ok=False, error=f"http_error: {type(e).__name__}: {e}")
 
- 
-        matches = re.findall(r'"priceCurrency"\s*:\s*"IRR"\s*,\s*"price"\s*:\s*([0-9]+)', text)
+      
+        matches = re.findall(
+            r'"price"\s*:\s*([0-9]+)',
+            text
+        )
         if matches:
-            irr = int(matches[0])
-            toman = irr // 10
-            if toman > 0:
-                return PriceResult(ok=True, price_toman=toman)
+            price = int(matches[0]) // 10
+            if price > 0:
+                return PriceResult(ok=True, price_toman=price)
 
-        m2 = re.search(r'"@type"\s*:\s*"Offer"[^{}]{0,2000}?"price"\s*:\s*([0-9]+)', text, flags=re.DOTALL)
-        if m2:
-            irr = int(m2.group(1))
-            toman = irr // 10
-            if toman > 0:
-                return PriceResult(ok=True, price_toman=toman)
-
-
-        try:
-            tree = html.fromstring(text)
-            body_text = " ".join(tree.xpath("//body//text()"))
-        except Exception as e:
-            return PriceResult(ok=False, error=f"parse_error: {type(e).__name__}: {e}")
-
-        price = normalize_price_to_toman(body_text)
-        if price and price > 0:
+        # 🔥 روش 2: fallback ساده
+        matches2 = re.findall(r"(\d{3,})\s*تومان", text)
+        if matches2:
+            price = int(matches2[0].replace(",", ""))
             return PriceResult(ok=True, price_toman=price)
 
         return PriceResult(ok=False, error="price_not_found")
